@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=utf-8>
+	<meta content="width=device-width,minimum-scale=1" name=viewport>
+	<meta content="exlimit" name=author>
+	<meta content="A Simple Geo Toolbox for GIS people." name=description>
+	<title>GeoBox | Map Downloader</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin="" />
+	<link rel="stylesheet" href="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.3.0/dist/leaflet-geoman.css" />
+	<link rel="stylesheet" href="assets/style.css" />
+	<link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="assets/leaflet-sidebar.css" />
+	<link rel="icon" type="image/png" href="assets/favicon.png" />
+</head>
+<body>
+
+<div id="sidebarx" class="sidebar collapsed">
+	<!-- Nav tabs -->
+	<div class="sidebar-tabs">
+		<ul role="tablist">
+			<li><a href="#home" role="tab"><i class="fa fa-download"></i></a></li>
+			<li class="disabled"><a href="#tasks" role="tab"><i class="fa fa-tasks"></i></a></li>
+			<li><a href="#maps" role="tab"><i class="fa fa-globe"></i></a></li>
+			<!-- <li class="disabled"><a href="https://github.com/Turbo87/sidebar-v2" role="tab" target="_blank"><i class="fa fa-github"></i></a></li> -->
+		</ul>
+
+		<ul role="tablist">
+			<li><a href="#settings" role="tab"><i class="fa fa-gear"></i></a></li>
+		</ul>
+	</div>
+
+	<!-- Tab panes -->
+	<div class="sidebar-content">
+		<div class="sidebar-pane" id="home">
+		  	<div id="sidebar">
+				<img src="assets/geobox128.png" style="height:36px;display:block; margin-top:5px; margin-bottom: 10px;">
+				<hr style="margin: 10px 0;">
+				<div class="section-header">工程配置(Project Settings)</div>
+				<div style="padding:3px 0;">
+					<button id="new-project" class="btn blue-btn" disabled>新建工程(New)</button>
+					<button id="open-project" class="btn blue-btn" disabled>打开工程(Open)</button>
+					<button id="save-project" class="btn blue-btn" disabled>保存工程(Save)</button>
+				</div>
+				<div class="section">
+					<div class="flex-container">
+						<div class="form-row">
+						<div class="form-group">
+							<label for="new-project-name">工程名(name)</label>
+							<input type="text" id="new-project-name" placeholder="Enter a name for your project">
+						</div>
+						<div class="form-group">
+							<label for="output-type">输出格式(output-type)</label>
+							<select id="output-type" name="output-type">
+								<option value="mbtiles">mbtiles</option>
+								<option value="files">files</option>
+							</select>
+						</div>
+						</div>
+						<div class="form-row">	
+						<div class="form-group">
+							<label for="workers">线程数(workers)</label>
+							<select id="workers" name="workers">
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="4">4</option>
+								<option value="8" selected>8</option>
+								<option value="16">16</option>
+								<option value="32">32</option>
+							</select>
+							</div>
+							<div class="form-group">
+							<label for="interval">间隔时间(interval)</label>
+							<select id="interval" name="interval">
+								<option value="10">10ms</option>
+								<option value="50" selected>50ms</option>
+								<option value="100">100ms</option>
+								<option value="200">200ms</option>
+								<option value="300">300ms</option>
+								<option value="500">500ms</option>
+								<option value="1000">1000ms</option>
+							</select>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="section-header">图层配置(Layer Settings)</div>
+				<div style="padding:3px 0;">
+					<button id="new-layer" class="btn blue-btn">添加图层(Add Layer)</button>
+					<button id="import-fc" class="btn blue-btn">导入图层(Import Layer)</button>
+				</div>
+				<div class="section">
+					<div id="layerBox"></div>
+				</div>
+				<hr style="margin: 10px 0;">
+				<button class="btn green-btn" id="create-new-project" style="width: 100%;">启动下载(Start Tiler)</button>
+				<button class="btn green-btn" id="create-new-project" style="width: 100%;">总进度...</button>
+				<button class="btn green-btn" id="create-new-project" style="width: 100%;">图层1进度...</button>
+				<button class="btn green-btn" id="create-new-project" style="width: 100%;">图层2进度...</button>
+				<button class="btn green-btn" id="create-new-project" style="width: 100%;">图层3进度...</button>
+			</div>
+		</div>
+
+		<div class="sidebar-pane" id="tasks">
+			<h1 class="sidebar-header">任务(tasks)<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1>
+			<img src="assets/geobox128.png" style="height:36px;display:block;margin-top:5px;">
+			<div style="padding:3px 0;">
+				<button id="open-proj" class="btn blue-btn">打开工程</button>
+				<button id="save-proj" class="btn blue-btn">保存工程</button>
+			</div>
+		</div>
+
+		<div class="sidebar-pane" id="maps">
+			<!-- <h1 class="sidebar-header">地图(maps)<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1> -->
+			<img src="assets/geobox128.png" style="height:36px;display:block;margin-top:5px; margin-bottom: 10px;">
+			<hr style="margin: 10px 0;">
+			<div class="section-header">地图管理(Maps)</div>
+			<ul id="basemap-list">
+				<!-- 地图项将动态添加到这里 -->
+			</ul>
+			<button id="add-basemap-btn" class="btn blue-btn">添加自定义地图</button>
+		</div>
+
+		<div class="sidebar-pane" id="settings">
+			<!-- <h1 class="sidebar-header">设置(Settings)<span class="sidebar-close"><i class="fa fa-caret-left"></i></span></h1> -->
+			<img src="assets/geobox128.png" style="height:36px;display:block;margin-top:5px;">
+			<hr style="margin: 10px 0;">
+			<div class="section-header">设置(Settings)</div>
+			<div style="padding:3px 0;">
+				<button id="new-fc" class="btn blue-btn" disabled>Settings</button>
+				<button id="import-fc" class="btn blue-btn" disabled>Tools</button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="map" class="sidebar-map"></div>
+<!-- LAT LNG PANE -->
+<div id="lat-lng-pane"></div>
+<!-- EDIT PANE -->
+<div id="edit-pane">
+	<div id="edit-pane-title" class="modal-head"></div>
+	<div style="margin:16px;">
+		<button id="save-feature" class="btn green-btn" title="Save Edits">Save</button>
+		<button id="close-edit-pane" class="btn blue-btn" title="Close and Don't Save Edits">Cancel</button>
+		<button id="delete-feature" class="btn red-btn" title="Delete Feature">Delete</button>
+	</div>
+	<div id="attribute-pane-container">
+		<ul id="attribute-pane"></ul>
+	</div>
+</div>
+<!-- MODAL NEW FEATURE COLLECTION -->
+<div id="new-layer-modal" class="modal">
+	<div class="modal-body">
+		<div class="modal-head">Create New Layer</div>
+		<div class="modal-content">
+			<label>图层名称(LayerName)</label>
+			<input type="text" id="new-layer-name" placeholder="Enter a name for your Layer">
+			<label>最小级别(minzoom)</label>
+			<select id="minzoom" name="minzoom">
+			</select>
+			<label>最大级别(maxzoom)</label>
+			<select id="maxzoom" name="maxzoom">
+			</select>
+		    <button class="btn red-btn close-modal">取消(Cancel)</button>
+		    <button class="btn green-btn" id="create-new-layer">创建图层(Create Layer)</button>
+		</div>
+	</div>
+</div>
+<!-- MODAL UPLOAD GEOJSON -->
+<div class="modal" id="import-file-modal">
+	<div class="modal-body">
+		<div class="modal-head">Import GeoJSON</div>
+		<div class="modal-content">
+			<label>Browse for file(s)</label>
+			<input type="file" class="geojson-file-input" accept=".json,.geojson" multiple>
+		    <button class="btn red-btn close-modal">Cancel</button>
+		    <button class="btn green-btn" id="add-geojson-map">Add GeoJSON to Map</button>
+		</div>
+	</div>
+</div>
+<!-- MODAL SETTINGS -->
+<div class="modal" id="settings-modal">
+	<div class="modal-body">
+		<div class="modal-head"></div>
+		<div class="modal-content">
+			<label>图层名称(LayerName)</label>
+			<input type="text" id="rename-layer" placeholder="Enter a name for your Layer">
+			<label>最小级别(minzoom)</label>
+			<input type="text" id="rename-minzoom" placeholder="minzoom level">
+			<label>最大级别(maxzoom)</label>
+			<input type="text" id="rename-maxzoom" placeholder="maxzoom level">
+			<!-- <fieldset>
+				<legend>Export Data</legend>
+				<a id="download-geojson" style="text-decoration: none;"><button class="btn blue-btn">Download as GeoJSON</button></a>
+				<button class="btn blue-btn close-modal" id="download-shp">Download as Shapefile</button>
+				<button class="btn red-btn close-modal" id="delete-fc">Delete Layer</button>
+			</fieldset> -->
+			<button class="btn red-btn close-modal">取消(Cancel)</button>
+			<button class="btn green-btn" id="update-settings">更新(Update Layer Settings)</button>
+			<button class="btn green-btn" id="apply-settings">应用(Apply layer Settings)</button>
+		</div>
+	</div>
+</div>
+<!-- MODAL STYLE -->
+<div class="modal" id="style-modal">
+	<div class="modal-body">
+		<div class="modal-head"></div>
+		<div class="modal-content">
+			<div class="grid-container">
+				<div>
+					<label>Stroke Color</label><br>
+					<input class="color-picker" id="style-stroke-color" type="color">
+				</div>
+				<div>
+					<label>Stroke Width <strong id="style-stroke-width-value"></strong></label><br>
+					<input class="slider" id="style-stroke-width" type="range"  min=1 max=10>
+				</div>
+				<div>
+					<label>Fill Color</label><br>
+					<input class="color-picker" id="style-fill-color" type="color">
+				</div>
+				<div>
+					<label>Fill Opacity <b id="style-fill-opacity-value"></b></label><br>
+					<input class="slider" id="style-fill-opacity" type="range"  min=0 max=1 step=0.1>
+				</div>
+				<div></div>
+				<div>
+					<label>Circle Radius <b id="radius-value"></b></label><br>
+					<input class="slider" id="radius" type="range"  min=4 max=14>
+				</div>	
+			</div>
+			<button class="btn red-btn close-modal">Cancel</button>
+			<button class="btn green-btn" id="apply-style">Apply Style</button>
+		</div>
+	</div>
+</div>
+<!-- MODAL NEW DOWNLOAD PROJECT -->
+<div id="new-project-modal" class="modal">
+	<div class="modal-body">
+		<div class="modal-head">Create New Download Project</div>
+		<div class="modal-content">
+			<label>工程名(name)</label>
+			<input type="text" id="new-project-name" placeholder="Enter a name for your download project">
+			<label>输出格式(output-type)</label>
+			    <select id="output-type" name="output-type">
+					<option value="mbtiles">mbtiles</option>
+					<option value="files">files</option>
+				</select>
+			<label>最小级别(minzoom)</label>
+				<select id="minzoom" name="minzoom">
+				</select>
+			<label>最大级别(maxzoom)</label>
+				<select id="maxzoom" name="maxzoom">
+				</select>
+			<label>线程数(workers)</label>
+				<select id="workers" name="workers">
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="4">4</option>
+					<option value="8" selected>8</option>
+					<option value="16">16</option>
+					<option value="32">32</option>
+				</select>
+			<label>间隔时间(interval)</label>
+				<select id="interval" name="interval">
+					<option value="10">10ms</option>
+					<option value="50" selected>50ms</option>
+					<option value="100">100ms</option>
+					<option value="200">200ms</option>
+					<option value="300">300ms</option>
+					<option value="500">500ms</option>
+					<option value="1000">1000ms</option>
+				</select>
+		    <button class="btn red-btn close-modal">取消(Cancel)</button>
+		    <button class="btn green-btn" id="create-new-project">创建(Create)</button>
+		</div>
+	</div>
+</div>
+<!-- 弹窗模板 -->
+<div id="basemap-modal" class="modal" style="display:none;">
+	<div class="modal-body">
+		<div class="modal-head">编辑地图信息</div>
+		<div class="modal-content">
+			<label>地图名称(Name)</label>
+			<input type="text" id="basemap-name" placeholder="地图名称" />
+			<label>地图地址(Url)</label>
+			<input type="text" id="basemap-url" placeholder="地图URL" />
+			<label>配置选项(Options)</label>
+			<textarea id="basemap-options" placeholder="地图选项（JSON格式）" style="min-height: 100px;"></textarea>
+		    <button class="btn red-btn close-modal">取消(Cancel)</button>
+		    <button class="btn green-btn" id="save-basemap-btn">保存(Save)</button>
+		</div>
+	</div>
+  </div>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+<script src="https://unpkg.com/@geoman-io/leaflet-geoman-free@2.3.0/dist/leaflet-geoman.min.js"></script>
+<script src="assets/leaflet-sidebar.js"></script>
+<script src="assets/basemaps.js"></script>
+<script src="assets/app.js"></script>
+<script>
+	const selectMin = document.getElementById('minzoom');
+	const selectMax = document.getElementById('maxzoom');
+	for (let i = 0; i <= 19; i++) {
+		const optionMin = document.createElement('option');
+		optionMin.value = i;
+		optionMin.textContent = i;
+		if (i === 7) {
+			optionMin.selected = true;
+		}
+		selectMin.appendChild(optionMin);
+		const optionMax = document.createElement('option');
+		optionMax.value = i;
+		optionMax.textContent = i;
+		if (i === 18) {
+			optionMax.selected = true;
+		}
+		selectMax.appendChild(optionMax);
+	}
+</script>
+</body>
+</html>
